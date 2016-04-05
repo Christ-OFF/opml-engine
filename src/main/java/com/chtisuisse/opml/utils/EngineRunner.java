@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A simple runner from the command line
@@ -27,7 +28,7 @@ public class EngineRunner {
 
     }
 
-    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, ExecutionException {
         //Create a "parser factory" for creating SAX parsers
         SAXParserFactory spfac = SAXParserFactory.newInstance();
         //Now use the parser factory to create a SAXParser object

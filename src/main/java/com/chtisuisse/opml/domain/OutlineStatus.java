@@ -78,7 +78,6 @@ public class OutlineStatus {
 
             SyndFeedInput input = new SyndFeedInput();
             URL url = this.getFeed().getXmlURl();
-
             logger.debug("Going to call " + this.getFeed().getXmlURl().toString() + " for feed.");
 
             try {
@@ -109,6 +108,9 @@ public class OutlineStatus {
                     lastUpdated = null;
                 }
                 httpStatus = HttpStatus.SC_OK;
+            } catch (IllegalArgumentException iae){
+                logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl().toString() + "reason " + iae.getLocalizedMessage(), iae);
+                httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
             } catch (ParsingFeedException pfe) {
                 logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl().toString() + "reason " + pfe.getLocalizedMessage(), pfe);
                 httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;

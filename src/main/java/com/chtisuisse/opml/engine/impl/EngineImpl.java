@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -18,8 +20,13 @@ public class EngineImpl implements Engine {
 
     private static final Logger logger = LoggerFactory.getLogger(EngineImpl.class);
 
+    /**
+     * We do some (2 is enough) parallelism to spend less time waiting for websites to answer
+     */
+    public static final int PARALLELISM = 2;
+
     @Override
-    public List<OutlineStatus> processOPML(List<Outline> tobeChecked) {
+    public List<OutlineStatus> processOPML(List<Outline> tobeChecked) throws ExecutionException {
         // Checks
         if (tobeChecked == null) {
             throw new IllegalArgumentException("List to be checked cannot be null ");
@@ -32,9 +39,11 @@ public class EngineImpl implements Engine {
                 .distinct()
                 .collect(Collectors.toList());
         logger.debug("Processing : check");
-        List<OutlineStatus> checked = prepare.parallelStream()
-                .map(toBeChecked -> toBeChecked.check())  // call check which returns the status
-                .collect(Collectors.toList());
+        // We will parallelize the processing
+        // Please read : http://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream
+        List<OutlineStatus> checked = prepare .parallelStream()
+                                    .map(toBeChecked -> toBeChecked.check())
+                                    .collect(Collectors.toList());
         logger.debug("Processing : filter");
         return checked.stream()
                 .filter(toBeStatusFiltered -> toBeStatusFiltered.getHttpStatus() == HttpStatus.SC_OK) // filter out non ok

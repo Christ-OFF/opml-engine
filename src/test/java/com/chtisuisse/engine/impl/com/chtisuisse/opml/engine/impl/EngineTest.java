@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests are put in an order driven by TDD : going deeper
@@ -41,7 +42,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_handle_emptylist() {
+    public void should_handle_emptylist() throws ExecutionException {
         List<Outline> input = new ArrayList<>(0);
         List<OutlineStatus> output = testedEngine.processOPML(input);
         Assert.assertNotNull(output);
@@ -49,7 +50,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_retrieve_same_outline() throws MalformedURLException {
+    public void should_retrieve_same_outline() throws MalformedURLException, ExecutionException {
         // Mock web
         stubFor(get(urlEqualTo("/feed"))
                 .willReturn(aResponse()
