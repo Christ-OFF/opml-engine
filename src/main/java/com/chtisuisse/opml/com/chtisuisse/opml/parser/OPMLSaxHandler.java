@@ -19,30 +19,30 @@ import java.util.List;
  */
 public class OPMLSaxHandler extends DefaultHandler {
 
-    final static Logger logger = LoggerFactory.getLogger(OPMLSaxHandler.class);
+    private final static Logger logger = LoggerFactory.getLogger(OPMLSaxHandler.class);
 
     /**
      * Those are the nodes we are looking for
      */
-    public static final String OUTLINE_NODE = "outline";
+    private static final String OUTLINE_NODE = "outline";
     /**
      * And of that type
      */
-    public static final String OUTLINE_NODE_TYPE = "type";
-    public static final String OUTLINE_NODE_TYPE_RSS = "rss";
-    public static final String OUTLINE_NODE_TEXT = "text";
-    public static final String OUTLINE_NODE_TITLE = "title";
-    public static final String OUTLINE_NODE_XMLURL = "xmlUrl";
-    public static final String OUTLINE_NODE_HTMLURL = "htmlUrl";
+    private static final String OUTLINE_NODE_TYPE = "type";
+    private static final String OUTLINE_NODE_TYPE_RSS = "rss";
+    private static final String OUTLINE_NODE_TEXT = "text";
+    private static final String OUTLINE_NODE_TITLE = "title";
+    private static final String OUTLINE_NODE_XMLURL = "xmlUrl";
+    private static final String OUTLINE_NODE_HTMLURL = "htmlUrl";
 
     /**
      * The result
      */
-    public List<Outline> opmlOutlines = new ArrayList<>();
+    public final List<Outline> opmlOutlines = new ArrayList<>();
     /**
      * The added outline
      */
-    public Outline outline = null;
+    private Outline outline = null;
 
     @Override
     public void startElement(String uri, String localName,
@@ -57,11 +57,7 @@ public class OPMLSaxHandler extends DefaultHandler {
                     // Optionnal attributes
                     outline.setTitle(attributes.getValue(OUTLINE_NODE_TITLE));
                     outline.setText(attributes.getValue(OUTLINE_NODE_TEXT));
-                    try  {
-                        outline.setHtmlUrl(attributes.getValue(OUTLINE_NODE_HTMLURL));
-                    } catch (MalformedURLException e){
-                        logger.info("Invalide html url but outline is created " + outline.toString(), e);
-                    }
+                    tryToSetHtml(attributes);
                     logger.debug("An outline has been built " + outline.toString());
                 } catch (MalformedURLException e) {
                     logger.warn("We have rejected outline without a good " + OUTLINE_NODE_XMLURL, e);
@@ -69,6 +65,18 @@ public class OPMLSaxHandler extends DefaultHandler {
             } else {
                 logger.debug("The following outline is not an feed one");
             }
+        }
+    }
+
+    /**
+     * We want to handle problem more nicely
+     * @param attributes
+     */
+    private void tryToSetHtml(Attributes attributes) {
+        try  {
+            outline.setHtmlUrl(attributes.getValue(OUTLINE_NODE_HTMLURL));
+        } catch (MalformedURLException e){
+            logger.info("Invalide html url but outline is created " + outline.toString(), e);
         }
     }
 

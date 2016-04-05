@@ -13,8 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 /**
  * Test for checking feed
@@ -27,7 +25,7 @@ public class OutlineStatusTest extends TestBase {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_not_accept_null_feed_url() throws MalformedURLException {
-        Outline checked = new Outline(null);
+        new Outline(null);
     }
 
     @Test

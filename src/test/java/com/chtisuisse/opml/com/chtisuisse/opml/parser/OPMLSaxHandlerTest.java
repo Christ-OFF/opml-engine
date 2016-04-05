@@ -1,9 +1,7 @@
 package com.chtisuisse.opml.com.chtisuisse.opml.parser;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -13,10 +11,10 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class OPMLSaxHandlerTest {
 
-    public static final String THE_TITLE = "the title";
-    public static final String THE_TEXT = "the text";
-    public static final String HTML_URL = "http://www.perdu.com/vraiment";
-    public static final String XML_URL = "http://www.perdu.com";
+    private static final String THE_TITLE = "the title";
+    private static final String THE_TEXT = "the text";
+    private static final String HTML_URL = "http://www.perdu.com/vraiment";
+    private static final String XML_URL = "http://www.perdu.com";
 
     @Test
     public void should_accept_standard_node() throws SAXException {

@@ -6,7 +6,6 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.ParsingFeedException;
 import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,57 +71,48 @@ public class OutlineStatus {
      */
     public OutlineStatus check() {
 
-        SyndFeed syndicationFeed = null;
+        SyndFeed syndicationFeed;
         InputStream is = null;
+
+        SyndFeedInput input;
+        URL url = this.getFeed().getXmlURl();
+        logger.debug("Going to call " + this.getFeed().getXmlURl().toString() + " for feed.");
+
         try {
-
-            SyndFeedInput input = new SyndFeedInput();
-            URL url = this.getFeed().getXmlURl();
-            logger.debug("Going to call " + this.getFeed().getXmlURl().toString() + " for feed.");
-
-            try {
-                System.setProperty("http.agent", USER_AGENT);
-                URLConnection openConnection = url.openConnection();
-                is = url.openConnection().getInputStream();
-                if ("gzip".equals(openConnection.getContentEncoding())) {
-                    is = new GZIPInputStream(is);
-                }
-                InputSource source = new InputSource(is);
-                input = new SyndFeedInput();
-                syndicationFeed = input.build(source);
-                XmlReader reader = new XmlReader(url);
-                //
-                syndicationFeed = input.build(reader);
-                logger.info("Feed " + this.getFeed().getXmlURl().toString() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
-                List entries = syndicationFeed.getEntries();
-                if (!entries.isEmpty()) {
-                    SyndEntry lastEntry = (SyndEntry) entries.get(0);
-                    if (lastEntry.getPublishedDate() != null) {
-                        lastUpdated = lastEntry.getPublishedDate().toInstant().atZone(ZoneId.of("GMT")).toLocalDateTime();
-                    } else {
-                        logger.warn("Last entry has no update datetime " + this.getFeed().getXmlURl().toString());
-                        lastUpdated = null;
-                    }
+            System.setProperty("http.agent", USER_AGENT);
+            URLConnection openConnection = url.openConnection();
+            is = url.openConnection().getInputStream();
+            if ("gzip".equals(openConnection.getContentEncoding())) {
+                is = new GZIPInputStream(is);
+            }
+            InputSource source = new InputSource(is);
+            input = new SyndFeedInput();
+            syndicationFeed = input.build(source);
+            logger.info("Feed " + this.getFeed().getXmlURl().toString() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
+            List entries = syndicationFeed.getEntries();
+            if (!entries.isEmpty()) {
+                SyndEntry lastEntry = (SyndEntry) entries.get(0);
+                if (lastEntry.getPublishedDate() != null) {
+                    lastUpdated = lastEntry.getPublishedDate().toInstant().atZone(ZoneId.of("GMT")).toLocalDateTime();
                 } else {
-                    logger.warn("Feed " + this.getFeed().getXmlURl() + " has no entry at all ");
+                    logger.warn("Last entry has no update datetime " + this.getFeed().getXmlURl().toString());
                     lastUpdated = null;
                 }
-                httpStatus = HttpStatus.SC_OK;
-            } catch (IllegalArgumentException iae){
-                logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl().toString() + "reason " + iae.getLocalizedMessage(), iae);
-                httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-            } catch (ParsingFeedException pfe) {
-                logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl().toString() + "reason " + pfe.getLocalizedMessage(), pfe);
-                httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-            } catch (FeedException e) {
-                logger.error(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
-                httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-            } catch (IOException e) {
-                logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
-                logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
-                httpStatus = HttpStatus.SC_BAD_REQUEST;
+            } else {
+                logger.warn("Feed " + this.getFeed().getXmlURl() + " has no entry at all ");
+                lastUpdated = null;
             }
-
+            httpStatus = HttpStatus.SC_OK;
+        } catch (IllegalArgumentException | ParsingFeedException iae) {
+            logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl().toString() + "reason " + iae.getLocalizedMessage(), iae);
+            httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        } catch (FeedException e) {
+            logger.error(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
+            httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        } catch (IOException e) {
+            logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
+            logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl().toString(), e);
+            httpStatus = HttpStatus.SC_BAD_REQUEST;
         } finally {
             IOUtils.closeQuietly(is);
         }
