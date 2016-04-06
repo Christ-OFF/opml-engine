@@ -202,7 +202,7 @@ public class OutlineStatusTest extends TestBase {
         // Create object
         Outline checked = new Outline("FAKE");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/permredir",0);
+        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/permredir");
         String url = result.getURL().toExternalForm();
         Assert.assertEquals("http://localhost:8089/destination",url);
     }
@@ -229,7 +229,7 @@ public class OutlineStatusTest extends TestBase {
         // Create object
         Outline checked = new Outline("FAKE");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/tempredir",0);
+        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/tempredir");
         String url = result.getURL().toExternalForm();
         Assert.assertEquals("http://localhost:8089/destination",url);
     }
@@ -272,7 +272,7 @@ public class OutlineStatusTest extends TestBase {
         // Create object
         Outline checked = new Outline("FAKE");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/redir1",0);
+        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/redir1");
         String url = result.getURL().toExternalForm();
         Assert.assertEquals("http://localhost:8089/redir5",url);
     }

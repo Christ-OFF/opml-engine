@@ -52,16 +52,12 @@ public class OPMLSaxHandler extends DefaultHandler {
             String nodeType = attributes.getValue(OUTLINE_NODE_TYPE);
             if (OUTLINE_NODE_TYPE_RSS.equals(nodeType)) {
                 String xmlUri = attributes.getValue(OUTLINE_NODE_XMLURL);
-                try {
-                    outline = new Outline(xmlUri);
-                    // Optionnal attributes
-                    outline.setTitle(attributes.getValue(OUTLINE_NODE_TITLE));
-                    outline.setText(attributes.getValue(OUTLINE_NODE_TEXT));
-                    tryToSetHtml(attributes);
-                    logger.debug("An outline has been built " + outline.toString());
-                } catch (MalformedURLException e) {
-                    logger.warn("We have rejected outline without a good " + OUTLINE_NODE_XMLURL, e);
-                }
+                outline = new Outline(xmlUri);
+                // Optionnal attributes
+                outline.setTitle(attributes.getValue(OUTLINE_NODE_TITLE));
+                outline.setText(attributes.getValue(OUTLINE_NODE_TEXT));
+                tryToSetHtml(attributes);
+                logger.debug("An outline has been built " + outline.toString());
             } else {
                 logger.debug("The following outline is not an feed one");
             }
@@ -73,11 +69,7 @@ public class OPMLSaxHandler extends DefaultHandler {
      * @param attributes
      */
     private void tryToSetHtml(Attributes attributes) {
-        try  {
-            outline.setHtmlUrl(attributes.getValue(OUTLINE_NODE_HTMLURL));
-        } catch (MalformedURLException e){
-            logger.info("Invalide html url but outline is created " + outline.toString(), e);
-        }
+        outline.setHtmlUrl(attributes.getValue(OUTLINE_NODE_HTMLURL));
     }
 
     @Override
