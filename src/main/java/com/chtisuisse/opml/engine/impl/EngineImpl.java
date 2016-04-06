@@ -34,7 +34,7 @@ public class EngineImpl implements Engine {
         logger.debug("Processing : check");
         // We will parallelize the processing
         // Please read : http://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream
-        List<OutlineStatus> checked = prepare .parallelStream()
+        List<OutlineStatus> checked = prepare.stream()
                                     .map(OutlineStatus::check)
                                     .collect(Collectors.toList());
         logger.debug("Processing : filter");

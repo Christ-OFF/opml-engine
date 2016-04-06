@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class OPMLSaxHandler extends DefaultHandler {
 
-    private final static Logger logger = LoggerFactory.getLogger(OPMLSaxHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(OPMLSaxHandler.class);
 
     /**
      * Those are the nodes we are looking for

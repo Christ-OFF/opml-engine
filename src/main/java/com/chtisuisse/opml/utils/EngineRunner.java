@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
  * A simple runner from the command line
  * Created by Christophe on 21.06.2015.
  */
-public class EngineRunner {
+class EngineRunner {
 
     /**
      * Prevent instantiation

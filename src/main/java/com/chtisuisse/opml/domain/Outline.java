@@ -1,8 +1,5 @@
 package com.chtisuisse.opml.domain;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * This class will hold Outline that need to be tested
  * Created by Christophe on 20.06.2015.
@@ -11,18 +8,19 @@ public class Outline {
 
     private String text;
     private String title;
-    private URL xmlURl;
-    private URL htmlUrl;
+    private String xmlURl;
+    private String htmlUrl;
 
     /**
      * We muste at least have an URL (valid not null)
+     *
      * @param xmlURl the compulsory url
      */
-    public Outline(String xmlURl) throws MalformedURLException {
-        if (xmlURl == null){
+    public Outline(String xmlURl) {
+        if (xmlURl == null) {
             throw new IllegalArgumentException("Null URL are not supported !");
         }
-        this.xmlURl = new URL(xmlURl);
+        this.xmlURl = xmlURl;
     }
 
     @Override
@@ -51,16 +49,16 @@ public class Outline {
         this.title = title;
     }
 
-    public URL getXmlURl() {
+    public String getXmlURl() {
         return xmlURl;
     }
 
-    public URL getHtmlUrl() {
+    public String getHtmlUrl() {
         return htmlUrl;
     }
 
-    public void setHtmlUrl(String htmlUrl) throws MalformedURLException {
-        this.htmlUrl = new URL(htmlUrl);
+    public void setHtmlUrl(String htmlUrl) {
+        this.htmlUrl = htmlUrl;
     }
 
 }
