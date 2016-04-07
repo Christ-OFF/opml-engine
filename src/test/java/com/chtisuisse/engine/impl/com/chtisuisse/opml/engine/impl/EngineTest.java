@@ -6,26 +6,23 @@ import com.chtisuisse.opml.domain.OutlineStatus;
 import com.chtisuisse.opml.engine.Engine;
 import com.chtisuisse.opml.engine.impl.EngineImpl;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import java.net.MalformedURLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 /**
  * Tests are put in an order driven by TDD : going deeper
  * Created by Christophe on 20.06.2015.
  */
+
 public class EngineTest extends TestBase {
 
     @Rule
@@ -42,7 +39,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_handle_emptylist() throws ExecutionException {
+    public void should_handle_emptylist() {
         List<Outline> input = new ArrayList<>(0);
         List<OutlineStatus> output = testedEngine.processOPML(input);
         Assert.assertNotNull(output);
@@ -50,7 +47,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_retrieve_same_outline() throws MalformedURLException, ExecutionException {
+    public void should_retrieve_same_outline() throws MalformedURLException {
         // Mock web
         stubFor(get(urlEqualTo("/feed"))
                 .willReturn(aResponse()

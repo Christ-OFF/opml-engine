@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
  * A simple runner from the command line
  * Created by Christophe on 21.06.2015.
  */
-public class EngineRunner {
+class EngineRunner {
 
     /**
      * Prevent instantiation
@@ -28,6 +28,14 @@ public class EngineRunner {
 
     }
 
+    /**
+     * A way to launch the engine
+     * @param args command line arguments one needed : full file path
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws ExecutionException
+     */
     public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, ExecutionException {
         //Create a "parser factory" for creating SAX parsers
         SAXParserFactory spfac = SAXParserFactory.newInstance();

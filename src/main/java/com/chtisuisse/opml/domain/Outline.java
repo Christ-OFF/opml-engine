@@ -1,7 +1,7 @@
 package com.chtisuisse.opml.domain;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * This class will hold Outline that need to be tested
@@ -11,28 +11,29 @@ public class Outline {
 
     private String text;
     private String title;
-    private URL xmlURl;
-    private URL htmlUrl;
+    private String xmlURL;
+    private String htmlUrl;
+    /**
+     * This parameter will hold the real XmlURL as the orgiginal one may be redirected a few times
+     */
+    private String redirectedXmlUrl;
 
     /**
      * We muste at least have an URL (valid not null)
-     * @param xmlURl the compulsory url
+     *
+     * @param xmlURL the compulsory url
      */
-    public Outline(String xmlURl) throws MalformedURLException {
-        if (xmlURl == null){
+    public Outline(String xmlURL) {
+        if (xmlURL == null) {
             throw new IllegalArgumentException("Null URL are not supported !");
         }
-        this.xmlURl = new URL(xmlURl);
+        this.xmlURL = xmlURL;
+        this.redirectedXmlUrl = xmlURL;
     }
 
     @Override
     public String toString() {
-        return "Outline{" +
-                "text='" + text + '\'' +
-                ", title='" + title + '\'' +
-                ", xmlURl='" + xmlURl + '\'' +
-                ", htmlUrl='" + htmlUrl + '\'' +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
 
     public String getText() {
@@ -51,16 +52,24 @@ public class Outline {
         this.title = title;
     }
 
-    public URL getXmlURl() {
-        return xmlURl;
+    public String getXmlURL() {
+        return xmlURL;
     }
 
-    public URL getHtmlUrl() {
+    public String getHtmlUrl() {
         return htmlUrl;
     }
 
-    public void setHtmlUrl(String htmlUrl) throws MalformedURLException {
-        this.htmlUrl = new URL(htmlUrl);
+    public void setHtmlUrl(String htmlUrl) {
+        this.htmlUrl = htmlUrl;
+    }
+
+    public String getRedirectedXmlUrl() {
+        return redirectedXmlUrl;
+    }
+
+    public void setRedirectedXmlUrl(String redirectedXmlUrl) {
+        this.redirectedXmlUrl = redirectedXmlUrl;
     }
 
 }

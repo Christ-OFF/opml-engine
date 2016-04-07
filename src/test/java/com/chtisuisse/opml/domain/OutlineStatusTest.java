@@ -4,17 +4,19 @@ import com.chtisuisse.opml.TestBase;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 /**
  * Test for checking feed
@@ -22,12 +24,22 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
  */
 public class OutlineStatusTest extends TestBase {
 
+    /**
+     * This is a very common reply body for 301 redirect
+     */
+    private static final String BODY_PERM_REDIRECT = "<html> <head><title>301 Moved Permanently</title></head> <body bgcolor=\"white\"> <center><h1>301 Moved Permanently</h1></center> <hr><center>nginx</center> </body> </html>";
+
+    /**
+     * This is a very common reply body for 302 redirect
+     */
+    private static final String BODY_TEMP_REDIRECT = "<html> <head><title>302 Moved Temporarily</title></head> <body bgcolor=\"white\"> <center><h1>302 Moved Temporarily</h1></center> <hr><center>nginx</center> </body> </html>";
+
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089); // No-args constructor defaults to port 8080
 
     @Test(expected = IllegalArgumentException.class)
     public void should_not_accept_null_feed_url() throws MalformedURLException {
-        Outline checked = new Outline(null);
+        new Outline(null);
     }
 
     @Test
@@ -110,5 +122,168 @@ public class OutlineStatusTest extends TestBase {
         output.check();
         Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
     }
+
+    /**
+     * Let's test absolute path to better understand URL
+     */
+    @Test
+    public void url_should_handle_absolute_redirection() throws MalformedURLException {
+        URL base = new URL("http://www.perdu.com");
+        URL next = new URL(base, "/absolute");
+        Assert.assertEquals("http://www.perdu.com/absolute",next.toExternalForm());
+    }
+
+    /**
+     * Let's test relative path to better understand URL
+     */
+    @Test
+    public void url_should_handle_relative_redirection() throws MalformedURLException {
+        URL base = new URL("http://www.perdu.com/");
+        URL next = new URL(base, "relative");
+        Assert.assertEquals("http://www.perdu.com/relative",next.toExternalForm());
+    }
+
+    /**
+     * Let's test relative path to better understand URL
+     */
+    @Test
+    public void url_should_handle_full_redirection() throws MalformedURLException {
+        URL base = new URL("http://www.perdu.com/");
+        URL next = new URL(base, "http://www.gagne.com");
+        Assert.assertEquals("http://www.gagne.com",next.toExternalForm());
+    }
+
+    /**
+     * This in an INTEGRATION test
+     * This start http://fujifilmblog.wordpress.com/feed/
+     * will redirecto to https://fujifilmblog.wordpress.com/feed/
+     * and then to http://fujifilm-blog.com/feed/
+     * We cannot reproduce fully with Wiremock
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
+    @Test
+    public void should_follow_real_world_redirects() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        // Create object
+        Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals("http://fujifilm-blog.com/feed/",checked.getRedirectedXmlUrl());
+    }
+
+    /**
+     * This in a unit test
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
+    @Test
+    public void should_follow_one_permanent_redirect() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        // Mock web
+        stubFor(get(urlEqualTo("/permredir"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_PERMANENTLY)
+                        .withHeader("Location","http://localhost:8089/destination")
+                        .withBody(BODY_PERM_REDIRECT)));
+        stubFor(get(urlEqualTo("/destination"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody("BODY")));
+        // Create object
+        Outline checked = new Outline("http://localhost:8089/permredir");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals("http://localhost:8089/destination",checked.getRedirectedXmlUrl());
+    }
+
+    /**
+     * This in a unit test
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
+    @Test
+    public void should_follow_one_temporary_redirect() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        // Mock web
+        stubFor(get(urlEqualTo("/tempredir"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/destination")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        stubFor(get(urlEqualTo("/destination"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody("BODY")));
+        // Create object
+        Outline checked = new Outline("http://localhost:8089/tempredir");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals("http://localhost:8089/destination",checked.getRedirectedXmlUrl());
+    }
+
+    /**
+     * This in a unit test
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
+    @Test
+    public void should_follow_three_redirects_only() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        // Mock web
+        stubFor(get(urlEqualTo("/redir1"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/redir2")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        stubFor(get(urlEqualTo("/redir2"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/redir3")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        stubFor(get(urlEqualTo("/redir2"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/redir4")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        stubFor(get(urlEqualTo("/redir4"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/redir5")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        stubFor(get(urlEqualTo("/redir5"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .withHeader("Location","http://localhost:8089/notreached")
+                        .withBody(BODY_TEMP_REDIRECT)));
+        // Create object
+        Outline checked = new Outline("http://localhost:8089/redir1");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR,output.getHttpStatus());
+    }
+
+    @Test
+    public void should_handle_wordpress_feeds_redirecting() throws MalformedURLException {
+        Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
+    }
+
+    @Test
+    @Ignore
+    public void should_handle_wordpress_feeds_tricky_redirection() throws MalformedURLException {
+        Outline checked = new Outline("http://www.madame-oreille.com/blog/index.php/feed/");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
+    }
+
+
 
 }
