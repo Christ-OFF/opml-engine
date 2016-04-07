@@ -27,7 +27,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class OutlineStatus {
 
-    private static final Logger logger = LoggerFactory.getLogger(OutlineStatus.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutlineStatus.class);
 
     private static final String PROBLEM_WHILE_PROCESSING = "Problem while processing ";
 
@@ -86,12 +86,12 @@ public class OutlineStatus {
      * @return
      * @throws IOException
      */
-    private HttpURLConnection openConnectionWithRedirects(String startURL, int currentNbredirects) throws IOException {
+    private HttpURLConnection openConnectionWithRedirects(String startURL, int currentNbredirects) throws TooManyRedirectionsException, IOException {
 
         URL currentURL = new URL(startURL);
         HttpURLConnection result = (HttpURLConnection) currentURL.openConnection();
         if (MAX_REDIRECTS <= currentNbredirects) {  // Maximum reached return
-            return result;
+            throw new TooManyRedirectionsException(startURL);
         }
         // else use this connection to go deeper (maybe)
         result.setConnectTimeout(CONNECT_TIMEOUT);
@@ -99,10 +99,14 @@ public class OutlineStatus {
         result.setInstanceFollowRedirects(false);           // if true it won't follow http <-> https redirects
         result.setRequestProperty("User-Agent", USER_AGENT);
         int currentHttpStatus = result.getResponseCode();
-        if ( HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus || HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus ) {
+        if (        HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus
+                ||  HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus ) {
             String newLocation = result.getHeaderField("Location");
             URL next = new URL(currentURL, newLocation);
-            return openConnectionWithRedirects(next.toExternalForm(),currentNbredirects+1);
+            String finalURL = next.toExternalForm();
+            LOGGER.info("At the end ,the feed URL " + this.feed.getXmlURL() + " redirects to " + finalURL);
+            this.feed.setRedirectedXmlUrl(finalURL);
+            return openConnectionWithRedirects(finalURL,currentNbredirects+1);
         } else {
             // We are not redirecting anymore return
             return result;
@@ -120,12 +124,12 @@ public class OutlineStatus {
         InputStream is = null;
 
         SyndFeedInput input;
-        String feeedURL = this.getFeed().getXmlURl();
-        logger.debug("Going to call " + this.getFeed().getXmlURl() + " for feed.");
+        String feeedURL = this.getFeed().getXmlURL();
+        LOGGER.debug("Going to call " + this.getFeed().getXmlURL() + " for feed.");
 
         try {
             System.setProperty("http.agent", USER_AGENT);
-            URLConnection openConnection = openConnectionWithRedirects(feeedURL,0);
+            URLConnection openConnection = openConnectionWithRedirects(feeedURL, 0);
             is = openConnection.getInputStream();
             if ("gzip".equals(openConnection.getContentEncoding())) {
                 is = new GZIPInputStream(is);
@@ -133,30 +137,33 @@ public class OutlineStatus {
             InputSource source = new InputSource(is);
             input = new SyndFeedInput();
             syndicationFeed = input.build(source);
-            logger.info("Feed " + this.getFeed().getXmlURl() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
+            LOGGER.info("Feed " + this.getFeed().getXmlURL() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
             List entries = syndicationFeed.getEntries();
             if (!entries.isEmpty()) {
                 SyndEntry lastEntry = (SyndEntry) entries.get(0);
                 if (lastEntry.getPublishedDate() != null) {
                     lastUpdated = lastEntry.getPublishedDate().toInstant().atZone(ZoneId.of("GMT")).toLocalDateTime();
                 } else {
-                    logger.warn("Last entry has no update datetime " + this.getFeed().getXmlURl());
+                    LOGGER.warn("Last entry has no update datetime " + this.getFeed().getXmlURL());
                     lastUpdated = null;
                 }
             } else {
-                logger.warn("Feed " + this.getFeed().getXmlURl() + " has no entry at all ");
+                LOGGER.warn("Feed " + this.getFeed().getXmlURL() + " has no entry at all ");
                 lastUpdated = null;
             }
             httpStatus = HttpStatus.SC_OK;
+        } catch (TooManyRedirectionsException tmre){
+            LOGGER.error("We do not allow more than " + MAX_REDIRECTS + " redirections", tmre);
+            httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
         } catch (IllegalArgumentException | ParsingFeedException iae) {
-            logger.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURl() + "reason " + iae.getLocalizedMessage(), iae);
+            LOGGER.error("Problem while parsing \"" + this.getFeed().getTitle() + "\" with URL " + this.getFeed().getXmlURL() + "reason " + iae.getLocalizedMessage(), iae);
             httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
         } catch (FeedException e) {
-            logger.error(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl(), e);
+            LOGGER.error(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURL(), e);
             httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
         } catch (IOException e) {
-            logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl(), e);
-            logger.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURl(), e);
+            LOGGER.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURL(), e);
+            LOGGER.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURL(), e);
             httpStatus = HttpStatus.SC_BAD_REQUEST;
         } finally {
             IOUtils.closeQuietly(is);

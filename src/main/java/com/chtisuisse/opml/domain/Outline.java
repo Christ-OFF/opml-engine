@@ -1,5 +1,8 @@
 package com.chtisuisse.opml.domain;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 /**
  * This class will hold Outline that need to be tested
  * Created by Christophe on 20.06.2015.
@@ -8,29 +11,29 @@ public class Outline {
 
     private String text;
     private String title;
-    private String xmlURl;
+    private String xmlURL;
     private String htmlUrl;
+    /**
+     * This parameter will hold the real XmlURL as the orgiginal one may be redirected a few times
+     */
+    private String redirectedXmlUrl;
 
     /**
      * We muste at least have an URL (valid not null)
      *
-     * @param xmlURl the compulsory url
+     * @param xmlURL the compulsory url
      */
-    public Outline(String xmlURl) {
-        if (xmlURl == null) {
+    public Outline(String xmlURL) {
+        if (xmlURL == null) {
             throw new IllegalArgumentException("Null URL are not supported !");
         }
-        this.xmlURl = xmlURl;
+        this.xmlURL = xmlURL;
+        this.redirectedXmlUrl = xmlURL;
     }
 
     @Override
     public String toString() {
-        return "Outline{" +
-                "text='" + text + '\'' +
-                ", title='" + title + '\'' +
-                ", xmlURl='" + xmlURl + '\'' +
-                ", htmlUrl='" + htmlUrl + '\'' +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
 
     public String getText() {
@@ -49,8 +52,8 @@ public class Outline {
         this.title = title;
     }
 
-    public String getXmlURl() {
-        return xmlURl;
+    public String getXmlURL() {
+        return xmlURL;
     }
 
     public String getHtmlUrl() {
@@ -59,6 +62,14 @@ public class Outline {
 
     public void setHtmlUrl(String htmlUrl) {
         this.htmlUrl = htmlUrl;
+    }
+
+    public String getRedirectedXmlUrl() {
+        return redirectedXmlUrl;
+    }
+
+    public void setRedirectedXmlUrl(String redirectedXmlUrl) {
+        this.redirectedXmlUrl = redirectedXmlUrl;
     }
 
 }

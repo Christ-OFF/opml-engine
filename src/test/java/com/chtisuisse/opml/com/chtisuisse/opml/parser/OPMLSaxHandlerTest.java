@@ -68,6 +68,6 @@ public class OPMLSaxHandlerTest {
         Assert.assertEquals(THE_TITLE,handler.opmlOutlines.get(0).getTitle());
         Assert.assertEquals(THE_TEXT,handler.opmlOutlines.get(0).getText());
         Assert.assertEquals(HTML_URL,handler.opmlOutlines.get(0).getHtmlUrl());
-        Assert.assertEquals(XML_URL,handler.opmlOutlines.get(0).getXmlURl());
+        Assert.assertEquals(XML_URL,handler.opmlOutlines.get(0).getXmlURL());
     }
 }

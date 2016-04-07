@@ -4,13 +4,12 @@ import com.chtisuisse.opml.TestBase;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -168,16 +167,10 @@ public class OutlineStatusTest extends TestBase {
     @Test
     public void should_follow_real_world_redirects() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         // Create object
-        Outline checked = new Outline("FAKE");
+        Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
         OutlineStatus output = new OutlineStatus(checked);
-        Class[] cArg = new Class[2];
-        cArg[0] = String.class;
-        cArg[1] = int.class;
-        Method method = OutlineStatus.class.getDeclaredMethod("openConnectionWithRedirects", cArg);
-        method.setAccessible(true);
-        HttpURLConnection result = (HttpURLConnection) method.invoke(output, "http://fujifilmblog.wordpress.com/feed/",0);
-        String url = result.getURL().toExternalForm();
-        Assert.assertEquals("http://fujifilm-blog.com/feed/",url);
+        output.check();
+        Assert.assertEquals("http://fujifilm-blog.com/feed/",checked.getRedirectedXmlUrl());
     }
 
     /**
@@ -200,11 +193,10 @@ public class OutlineStatusTest extends TestBase {
                         .withStatus(HttpStatus.SC_OK)
                         .withBody("BODY")));
         // Create object
-        Outline checked = new Outline("FAKE");
+        Outline checked = new Outline("http://localhost:8089/permredir");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/permredir");
-        String url = result.getURL().toExternalForm();
-        Assert.assertEquals("http://localhost:8089/destination",url);
+        output.check();
+        Assert.assertEquals("http://localhost:8089/destination",checked.getRedirectedXmlUrl());
     }
 
     /**
@@ -227,11 +219,10 @@ public class OutlineStatusTest extends TestBase {
                         .withStatus(HttpStatus.SC_OK)
                         .withBody("BODY")));
         // Create object
-        Outline checked = new Outline("FAKE");
+        Outline checked = new Outline("http://localhost:8089/tempredir");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/tempredir");
-        String url = result.getURL().toExternalForm();
-        Assert.assertEquals("http://localhost:8089/destination",url);
+        output.check();
+        Assert.assertEquals("http://localhost:8089/destination",checked.getRedirectedXmlUrl());
     }
 
     /**
@@ -270,28 +261,10 @@ public class OutlineStatusTest extends TestBase {
                         .withHeader("Location","http://localhost:8089/notreached")
                         .withBody(BODY_TEMP_REDIRECT)));
         // Create object
-        Outline checked = new Outline("FAKE");
+        Outline checked = new Outline("http://localhost:8089/redir1");
         OutlineStatus output = new OutlineStatus(checked);
-        HttpURLConnection result = callPrivateMethod(output,"http://localhost:8089/redir1");
-        String url = result.getURL().toExternalForm();
-        Assert.assertEquals("http://localhost:8089/redir5",url);
-    }
-
-    /**
-     * Helper method to call private method
-     * @param output
-     * @return
-     * @throws NoSuchMethodException
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     */
-    private HttpURLConnection callPrivateMethod(OutlineStatus output, String url) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class[] cArg = new Class[2];
-        cArg[0] = String.class;
-        cArg[1] = int.class;
-        Method method = OutlineStatus.class.getDeclaredMethod("openConnectionWithRedirects", cArg);
-        method.setAccessible(true);
-        return (HttpURLConnection) method.invoke(output, url,0);
+        output.check();
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR,output.getHttpStatus());
     }
 
     @Test
@@ -301,5 +274,16 @@ public class OutlineStatusTest extends TestBase {
         output.check();
         Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
     }
+
+    @Test
+    @Ignore
+    public void should_handle_wordpress_feeds_tricky_redirection() throws MalformedURLException {
+        Outline checked = new Outline("http://www.madame-oreille.com/blog/index.php/feed/");
+        OutlineStatus output = new OutlineStatus(checked);
+        output.check();
+        Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
+    }
+
+
 
 }
