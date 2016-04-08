@@ -154,26 +154,6 @@ public class OutlineStatusTest extends TestBase {
     }
 
     /**
-     * This in an INTEGRATION test
-     * This start http://fujifilmblog.wordpress.com/feed/
-     * will redirecto to https://fujifilmblog.wordpress.com/feed/
-     * and then to http://fujifilm-blog.com/feed/
-     * We cannot reproduce fully with Wiremock
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     * @throws IOException
-     */
-    @Test
-    public void should_follow_real_world_redirects() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-        // Create object
-        Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
-        OutlineStatus output = new OutlineStatus(checked);
-        output.check();
-        Assert.assertEquals("http://fujifilm-blog.com/feed/",checked.getRedirectedXmlUrl());
-    }
-
-    /**
      * This in a unit test
      * @throws NoSuchMethodException
      * @throws InvocationTargetException
@@ -267,18 +247,23 @@ public class OutlineStatusTest extends TestBase {
         Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR,output.getHttpStatus());
     }
 
+    /**
+     * Integratiuon test ignored to avoid failed is external ressource is offline
+     * @throws MalformedURLException
+     */
     @Test
+    @Ignore
     public void should_handle_wordpress_feeds_redirecting() throws MalformedURLException {
         Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
         OutlineStatus output = new OutlineStatus(checked);
         output.check();
         Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
+        Assert.assertEquals("http://fujifilm-blog.com/feed/",checked.getRedirectedXmlUrl());
     }
 
     @Test
-    @Ignore
     public void should_handle_wordpress_feeds_tricky_redirection() throws MalformedURLException {
-        Outline checked = new Outline("http://www.madame-oreille.com/blog/index.php/feed/");
+        Outline checked = new Outline("http://www.madame-oreille.com/blog/index.php/feed/atom/");
         OutlineStatus output = new OutlineStatus(checked);
         output.check();
         Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
