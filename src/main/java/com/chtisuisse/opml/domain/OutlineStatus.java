@@ -1,5 +1,6 @@
 package com.chtisuisse.opml.domain;
 
+import com.chtisuisse.opml.utils.EmptyLineSkipper;
 import com.jayway.jsonpath.internal.IOUtils;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -90,7 +91,7 @@ public class OutlineStatus {
 
         URL currentURL = new URL(startURL);
         HttpURLConnection result = (HttpURLConnection) currentURL.openConnection();
-        if (MAX_REDIRECTS <= currentNbredirects) {  // Maximum reached return
+        if (MAX_REDIRECTS < currentNbredirects) {  // Maximum reached return
             throw new TooManyRedirectionsException(startURL);
         }
         // else use this connection to go deeper (maybe)
@@ -134,7 +135,7 @@ public class OutlineStatus {
             if ("gzip".equals(openConnection.getContentEncoding())) {
                 is = new GZIPInputStream(is);
             }
-            InputSource source = new InputSource(is);
+            InputSource source = new InputSource(EmptyLineSkipper.skipEmptyLines(is));
             input = new SyndFeedInput();
             syndicationFeed = input.build(source);
             LOGGER.info("Feed " + this.getFeed().getXmlURL() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
