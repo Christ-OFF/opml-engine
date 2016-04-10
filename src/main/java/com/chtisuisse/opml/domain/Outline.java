@@ -1,8 +1,5 @@
 package com.chtisuisse.opml.domain;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 /**
  * This class will hold Outline that need to be tested
  * Created by Christophe on 20.06.2015.
@@ -33,7 +30,10 @@ public class Outline {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+        return "Outline{" +
+                "title=" + title +
+                ", xnlURL=" + xmlURL +
+                '}';
     }
 
     public String getText() {

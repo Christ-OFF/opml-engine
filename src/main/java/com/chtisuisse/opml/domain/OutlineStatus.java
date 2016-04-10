@@ -58,26 +58,13 @@ public class OutlineStatus {
         return feed;
     }
 
-    public void setFeed(Outline feed) {
-        this.feed = feed;
-    }
-
     public int getHttpStatus() {
         return httpStatus;
-    }
-
-    public void setHttpStatus(int httpStatus) {
-        this.httpStatus = httpStatus;
     }
 
     public LocalDateTime getLastUpdated() {
         return lastUpdated;
     }
-
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
 
     /**
      * This private methods will follow redirects
