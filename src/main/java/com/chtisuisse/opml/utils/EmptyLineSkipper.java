@@ -15,10 +15,16 @@ public class EmptyLineSkipper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutlineStatus.class);
 
+    /**
+     * This is an utility class so avoid it being instantiated
+     */
+    private EmptyLineSkipper() {
+    }
+
     public static InputStream skipEmptyLines(InputStream is) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        String line = null;
+        String line;
         try {
             while((line = in.readLine()) != null) {
                 if (!line.isEmpty()){
