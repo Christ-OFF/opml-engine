@@ -129,7 +129,9 @@ public class OutlineStatus {
             List entries = syndicationFeed.getEntries();
             if (!entries.isEmpty()) {
                 SyndEntry lastEntry = (SyndEntry) entries.get(0);
-                if (lastEntry.getPublishedDate() != null) {
+                if (lastEntry.getUpdatedDate() != null) {
+                    lastUpdated = lastEntry.getUpdatedDate().toInstant().atZone(ZoneId.of("GMT")).toLocalDateTime();
+                } else if (lastEntry.getPublishedDate() != null) {
                     lastUpdated = lastEntry.getPublishedDate().toInstant().atZone(ZoneId.of("GMT")).toLocalDateTime();
                 } else {
                     LOGGER.warn("Last entry has no update datetime " + this.getFeed().getXmlURL());
