@@ -1,7 +1,6 @@
 package com.chtisuisse.opml.domain;
 
 import com.chtisuisse.opml.utils.EmptyLineSkipper;
-import com.jayway.jsonpath.internal.IOUtils;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
@@ -16,11 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * The Outline checker

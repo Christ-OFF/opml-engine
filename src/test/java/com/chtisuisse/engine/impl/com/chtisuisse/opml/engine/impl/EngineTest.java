@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -39,7 +40,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_handle_emptylist() {
+    public void should_handle_emptylist() throws ExecutionException, InterruptedException {
         List<Outline> input = new ArrayList<>(0);
         List<OutlineStatus> output = testedEngine.processOPML(input);
         Assert.assertNotNull(output);
@@ -47,7 +48,7 @@ public class EngineTest extends TestBase {
     }
 
     @Test
-    public void should_retrieve_same_outline() throws MalformedURLException {
+    public void should_retrieve_same_outline() throws ExecutionException, InterruptedException {
         // Mock web
         stubFor(get(urlEqualTo("/feed"))
                 .willReturn(aResponse()

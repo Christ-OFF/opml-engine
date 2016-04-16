@@ -38,7 +38,7 @@ class EngineRunner {
      * @throws SAXException
      * @throws ExecutionException
      */
-    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, ExecutionException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, ExecutionException, InterruptedException {
         //
         SSLCALoader.loadAdditionnalCertificates();
         //Create a "parser factory" for creating SAX parsers

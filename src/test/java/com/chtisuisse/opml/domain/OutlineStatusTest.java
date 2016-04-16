@@ -4,7 +4,6 @@ import com.chtisuisse.opml.TestBase;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
