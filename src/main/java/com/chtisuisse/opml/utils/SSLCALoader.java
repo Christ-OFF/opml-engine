@@ -28,7 +28,7 @@ class SSLCALoader {
     /**
      * Yes Java has a default keystore password
      */
-    public static final String DEFAULT_KEYSTORE_PASSWORD = "changeit";
+    private static final String DEFAULT_KEYSTORE_PASSWORD = "changeit";
 
     /**
      * This is a utility class
@@ -39,7 +39,7 @@ class SSLCALoader {
     /**
      * We load the default java keystore
      */
-    private static final KeyStore loadDefaultKeyStore() {
+    private static KeyStore loadDefaultKeyStore() {
         InputStream keyStoreInputStream = null;
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());

@@ -3,12 +3,9 @@ package com.chtisuisse.opml.utils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.net.ssl.SSLContext;
 import java.lang.reflect.Method;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
-import java.util.Collections;
 
 /**
  * Created by Christophe on 16.04.2016.

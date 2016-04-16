@@ -46,7 +46,7 @@ public class OutlineStatus {
      */
     private static final int MAX_REDIRECTS = 3;
 
-    private Outline feed;
+    private final Outline feed;
     private int httpStatus;
     private LocalDateTime lastUpdated;
 
