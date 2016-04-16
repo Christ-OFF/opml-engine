@@ -69,6 +69,7 @@ public class OutlineStatus {
     /**
      * This private methods will follow redirects
      * We keep this method private to train testing private methods
+     *
      * @param startURL
      * @param currentNbredirects : the current number of redirects
      * @return
@@ -87,14 +88,14 @@ public class OutlineStatus {
         result.setInstanceFollowRedirects(false);           // if true it won't follow http <-> https redirects
         result.setRequestProperty("User-Agent", USER_AGENT);
         int currentHttpStatus = result.getResponseCode();
-        if (        HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus
-                ||  HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus ) {
+        if (HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus
+                || HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus) {
             String newLocation = result.getHeaderField("Location");
             URL next = new URL(currentURL, newLocation);
             String finalURL = next.toExternalForm();
             LOGGER.info("At the end ,the feed URL " + this.feed.getXmlURL() + " redirects to " + finalURL);
             this.feed.setRedirectedXmlUrl(finalURL);
-            return openConnectionWithRedirects(finalURL,currentNbredirects+1);
+            return openConnectionWithRedirects(finalURL, currentNbredirects + 1);
         } else {
             // We are not redirecting anymore return
             return result;
@@ -109,19 +110,17 @@ public class OutlineStatus {
     public OutlineStatus check() {
 
         SyndFeed syndicationFeed;
-        InputStream is = null;
 
         SyndFeedInput input;
         String feeedURL = this.getFeed().getXmlURL();
         LOGGER.debug("Going to call " + this.getFeed().getXmlURL() + " for feed.");
 
-        try {
-            System.setProperty("http.agent", USER_AGENT);
-            URLConnection openConnection = openConnectionWithRedirects(feeedURL, 0);
-            is = openConnection.getInputStream();
-            if ("gzip".equals(openConnection.getContentEncoding())) {
-                is = new GZIPInputStream(is);
-            }
+        System.setProperty("http.agent", USER_AGENT);
+        try (
+                // is is Closable
+                // see : http://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
+                InputStream is = openConnectionWithRedirects(feeedURL, 0).getInputStream()
+        ) {
             InputSource source = new InputSource(EmptyLineSkipper.skipEmptyLines(is));
             input = new SyndFeedInput();
             syndicationFeed = input.build(source);
@@ -142,7 +141,7 @@ public class OutlineStatus {
                 lastUpdated = null;
             }
             httpStatus = HttpStatus.SC_OK;
-        } catch (TooManyRedirectionsException tmre){
+        } catch (TooManyRedirectionsException tmre) {
             LOGGER.error("We do not allow more than " + MAX_REDIRECTS + " redirections", tmre);
             httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
         } catch (IllegalArgumentException | ParsingFeedException iae) {
@@ -155,8 +154,6 @@ public class OutlineStatus {
             LOGGER.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURL(), e);
             LOGGER.warn(PROBLEM_WHILE_PROCESSING + this.getFeed().getXmlURL(), e);
             httpStatus = HttpStatus.SC_BAD_REQUEST;
-        } finally {
-            IOUtils.closeQuietly(is);
         }
 
         return this;

@@ -249,20 +249,6 @@ public class OutlineStatusTest extends TestBase {
     }
 
     /**
-     * Integratiuon test ignored to avoid failed is external ressource is offline
-     * @throws MalformedURLException
-     */
-    @Test
-    @Ignore
-    public void should_handle_wordpress_feeds_redirecting() throws MalformedURLException {
-        Outline checked = new Outline("http://fujifilmblog.wordpress.com/feed/");
-        OutlineStatus output = new OutlineStatus(checked);
-        output.check();
-        Assert.assertEquals(HttpStatus.SC_OK,output.getHttpStatus());
-        Assert.assertEquals("http://fujifilm-blog.com/feed/",checked.getRedirectedXmlUrl());
-    }
-
-    /**
      * Integration test to see what king of last-update time http://xkcd.com/atom.xml has
      */
     @Test
@@ -271,7 +257,6 @@ public class OutlineStatusTest extends TestBase {
         stubFor(get(urlEqualTo("/xkcd"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
-                        .withHeader("Location","http://localhost:8089/redir2")
                         .withBody(XKCD)));
         Outline checked = new Outline("http://localhost:8089/xkcd");
         OutlineStatus output = new OutlineStatus(checked);

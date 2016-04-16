@@ -11,6 +11,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -50,7 +52,11 @@ class EngineRunner {
         sp.parse(file,handler);
 
         List<Outline> outlines = handler.opmlOutlines;
+        Instant start = Instant.now();
         List<OutlineStatus> result = new EngineImpl().processOPML(outlines);
+        Instant end = Instant.now();
+        Duration processDuration = Duration.between(start,end);
+        System.out.println("=== it took " + processDuration.getSeconds()+ " seconds to process " + outlines.size() + " feeeds ===");
         Collections.sort(result, (o1, o2) -> {
             if (o1.getLastUpdated() == null){
                 return -1;

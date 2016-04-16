@@ -27,7 +27,7 @@ public class EngineImpl implements Engine {
         // Process
         logger.debug("Processing : add");
         // No parallel here (useless)
-        List<OutlineStatus> prepare = tobeChecked.stream()
+        List<OutlineStatus> prepare = tobeChecked.parallelStream()
                 .map(OutlineStatus::new)   // transform List of Outline to List of OutlineStatus
                 .distinct()
                 .collect(Collectors.toList());
