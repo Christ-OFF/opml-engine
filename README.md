@@ -4,4 +4,4 @@ Check and Get the Last updated date of feeds to get rid of those never updated f
 
 # Certificates
 
-You may need addiotionnal certificates from https://letsencrypt.org/certificates/
+You may need additionnal certificates from https://letsencrypt.org/certificates/
