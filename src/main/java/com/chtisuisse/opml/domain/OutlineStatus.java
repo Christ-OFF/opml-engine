@@ -67,36 +67,49 @@ public class OutlineStatus {
      * This private methods will follow redirects
      * We keep this method private to train testing private methods
      *
-     * @param startURL
-     * @param currentNbredirects : the current number of redirects
-     * @return
+     * @param startURL the url we start with
+     * @return a good redirected connection
      * @throws IOException
      */
-    private HttpURLConnection openConnectionWithRedirects(String startURL, int currentNbredirects) throws TooManyRedirectionsException, IOException {
+    private HttpURLConnection openConnectionWithRedirects(String startURL) throws TooManyRedirectionsException, IOException {
 
-        URL currentURL = new URL(startURL);
-        HttpURLConnection result = (HttpURLConnection) currentURL.openConnection();
-        if (MAX_REDIRECTS < currentNbredirects) {  // Maximum reached return
-            throw new TooManyRedirectionsException(startURL);
+
+        String url  = startURL;
+        for (int currentNbredirects = 0 ; currentNbredirects <= MAX_REDIRECTS ; currentNbredirects++) {
+
+            URL currentURL = new URL(url);
+            HttpURLConnection result = getHttpURLConnection(currentURL);
+            int currentHttpStatus = result.getResponseCode();
+            if (HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus
+                    || HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus) {
+                String newLocation = result.getHeaderField("Location");
+                URL next = new URL(currentURL, newLocation);
+                String finalURL = next.toExternalForm();
+                LOGGER.info("At the end ,the feed URL " + this.feed.getXmlURL() + " redirects to " + finalURL);
+                this.feed.setRedirectedXmlUrl(finalURL);
+                url = finalURL;
+            } else {
+                // We are not redirecting anymore return
+                return result;
+            }
         }
-        // else use this connection to go deeper (maybe)
+        throw new TooManyRedirectionsException(startURL);
+    }
+
+    /**
+     * Build a connection with expected parameters
+     *
+     * @param url needed to return a connection
+     * @return a connection
+     * @throws IOException
+     */
+    private HttpURLConnection getHttpURLConnection(URL url) throws IOException {
+        HttpURLConnection result = (HttpURLConnection) url.openConnection();
         result.setConnectTimeout(CONNECT_TIMEOUT);
         result.setReadTimeout(TIMEOUT);
         result.setInstanceFollowRedirects(false);           // if true it won't follow http <-> https redirects
         result.setRequestProperty("User-Agent", USER_AGENT);
-        int currentHttpStatus = result.getResponseCode();
-        if (HttpURLConnection.HTTP_MOVED_TEMP == currentHttpStatus
-                || HttpURLConnection.HTTP_MOVED_PERM == currentHttpStatus) {
-            String newLocation = result.getHeaderField("Location");
-            URL next = new URL(currentURL, newLocation);
-            String finalURL = next.toExternalForm();
-            LOGGER.info("At the end ,the feed URL " + this.feed.getXmlURL() + " redirects to " + finalURL);
-            this.feed.setRedirectedXmlUrl(finalURL);
-            return openConnectionWithRedirects(finalURL, currentNbredirects + 1);
-        } else {
-            // We are not redirecting anymore return
-            return result;
-        }
+        return result;
     }
 
     /**
@@ -116,7 +129,7 @@ public class OutlineStatus {
         try (
                 // is is Closable
                 // see : http://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
-                InputStream is = openConnectionWithRedirects(feeedURL, 0).getInputStream()
+                InputStream is = openConnectionWithRedirects(feeedURL).getInputStream()
         ) {
             InputSource source = new InputSource(EmptyLineSkipper.skipEmptyLines(is));
             input = new SyndFeedInput();
