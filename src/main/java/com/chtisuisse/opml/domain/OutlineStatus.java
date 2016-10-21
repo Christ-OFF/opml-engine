@@ -133,6 +133,7 @@ public class OutlineStatus {
         ) {
             InputSource source = new InputSource(EmptyLineSkipper.skipEmptyLines(is));
             input = new SyndFeedInput();
+            input.setAllowDoctypes(true);
             syndicationFeed = input.build(source);
             LOGGER.info("Feed " + this.getFeed().getXmlURL() + " replied with " + syndicationFeed.getEntries().size() + " elements ");
             List entries = syndicationFeed.getEntries();
