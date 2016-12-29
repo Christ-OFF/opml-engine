@@ -65,7 +65,7 @@ public class OPMLSaxHandler extends DefaultHandler {
 
     /**
      * We want to handle problem more nicely
-     * @param attributes
+     * @param attributes node attributes
      */
     private void tryToSetHtml(Attributes attributes) {
         outline.setHtmlUrl(attributes.getValue(OUTLINE_NODE_HTMLURL));
